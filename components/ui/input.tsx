@@ -1,10 +1,60 @@
+/**
+ * Input Component
+ * 
+ * A styled input field component that follows the design system's theme.
+ * Provides consistent styling, focus states, and accessibility features
+ * across all forms in the application.
+ * 
+ * @module components/ui/input
+ */
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Input component props interface
+ * 
+ * Extends all standard HTML input element attributes, allowing full
+ * customization while maintaining consistent base styling.
+ */
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}
 
+/**
+ * Input component
+ * 
+ * A reusable input field with consistent styling that matches the
+ * application's design system. Supports all standard input types
+ * (text, email, password, number, etc.).
+ * 
+ * Features:
+ * - Consistent border and background colors
+ * - Focus ring for accessibility
+ * - Disabled state styling
+ * - Placeholder text styling
+ * - File input support
+ * 
+ * @param {InputProps} props - Input component props
+ * @param {React.Ref<HTMLInputElement>} ref - Forwarded ref to the input element
+ * @returns {JSX.Element} The rendered input element
+ * 
+ * @example
+ * // Basic text input
+ * <Input type="text" placeholder="Enter your name" />
+ * 
+ * @example
+ * // Email input with validation
+ * <Input type="email" placeholder="email@example.com" required />
+ * 
+ * @example
+ * // With React Hook Form
+ * <Input {...register("email")} type="email" />
+ * 
+ * @example
+ * // Password input
+ * <Input type="password" placeholder="Enter password" />
+ */
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
     return (

@@ -1,3 +1,18 @@
+/**
+ * Home Page Component
+ * 
+ * The main landing page of the application. Showcases:
+ * - Hero section with event branding and call-to-action buttons
+ * - Initiative section explaining the event's purpose
+ * - Event timeline with key dates and milestones
+ * - Sponsors section highlighting event sponsors
+ * - Contact form for inquiries
+ * 
+ * This is a public page accessible to all visitors, authenticated or not.
+ * 
+ * @module app/page
+ */
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import Timeline from "@/components/timeline"
@@ -5,6 +20,23 @@ import Sponsors from "@/components/sponsors"
 import ContactForm from "@/components/contact-form"
 import { Target, Users, Heart, TrendingUp, Mail } from "lucide-react"
 
+/**
+ * Home page component
+ * 
+ * Renders the main landing page with multiple sections:
+ * 1. Hero Section: Large banner with event name and primary CTAs
+ * 2. Initiative Section: Information about the event's mission
+ * 3. Timeline Section: Event schedule and milestones
+ * 4. Sponsors Section: Event sponsors and partner information
+ * 5. Contact Section: Contact form for visitor inquiries
+ * 
+ * @returns {JSX.Element} The rendered home page
+ * 
+ * @remarks
+ * This is a Server Component (default in Next.js App Router).
+ * All components used here (Timeline, Sponsors, ContactForm) are either
+ * Server Components or handle their own client-side logic.
+ */
 export default function Home() {
   return (
     <div className="w-full">

@@ -1,3 +1,17 @@
+/**
+ * Navigation Bar Component
+ * 
+ * Main navigation component that appears at the top of every page.
+ * Features:
+ * - Responsive design with mobile hamburger menu
+ * - Dynamic navigation links based on authentication state
+ * - Admin link for users with admin role
+ * - Logout functionality
+ * - Sticky positioning for always-visible navigation
+ * 
+ * @module components/navbar
+ */
+
 "use client"
 
 import Link from "next/link"
@@ -8,11 +22,42 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/auth-provider"
 
+/**
+ * Navigation bar component
+ * 
+ * Renders the main site navigation with:
+ * - Logo/brand name
+ * - Public navigation links (Home, Gallery, Announcements, Events)
+ * - Conditional links based on auth state:
+ *   - Authenticated: Dashboard, Admin (if admin), Logout
+ *   - Unauthenticated: Register
+ * - Mobile-responsive hamburger menu
+ * 
+ * Navigation structure:
+ * - Public routes: Always visible
+ * - Authenticated routes: Only visible when user is logged in
+ * - Admin route: Only visible when user has admin role
+ * 
+ * @returns {JSX.Element} The rendered navigation bar
+ * 
+ * @example
+ * // Used in app/layout.tsx
+ * <Navbar />
+ */
 const Navbar = () => {
+  // State for mobile menu open/close
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Get authentication state from context
   const { user, loading, signOut } = useAuth()
+  
+  // Router for navigation after logout
   const router = useRouter()
 
+  /**
+   * Public navigation links that are always visible
+   * These routes don't require authentication
+   */
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/gallery", label: "Gallery" },
@@ -20,6 +65,15 @@ const Navbar = () => {
     { href: "/events", label: "Events" },
   ]
 
+  /**
+   * Handles user logout
+   * 
+   * This function:
+   * 1. Signs out the user via Supabase
+   * 2. Closes the mobile menu if open
+   * 3. Redirects to home page
+   * 4. Refreshes the router to update the page state
+   */
   const handleLogout = async () => {
     await signOut()
     setIsOpen(false)

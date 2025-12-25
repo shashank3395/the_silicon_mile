@@ -1,30 +1,71 @@
+/**
+ * Dashboard Page Component
+ * 
+ * User dashboard page that displays user information and registration status.
+ * Features:
+ * - Protected route (requires authentication)
+ * - Displays user profile information
+ * - Shows event registration form if user hasn't registered
+ * - Shows registration status and details if user has registered
+ * - Provides event information and next steps
+ * 
+ * Route: /dashboard
+ * 
+ * @module app/dashboard/page
+ */
+
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { CheckCircle, Clock, User, Building, Mail, Calendar } from "lucide-react"
 import RegistrationForm from "@/components/registration-form"
 
+/**
+ * Dashboard page component
+ * 
+ * Server Component that:
+ * 1. Checks if user is authenticated (redirects to /login if not)
+ * 2. Retrieves user metadata (name, company, email)
+ * 3. Checks if user has registered for the event
+ * 4. Displays registration form if not registered
+ * 5. Displays registration status and details if registered
+ * 
+ * @returns {Promise<JSX.Element>} The rendered dashboard page
+ * 
+ * @remarks
+ * This is a Server Component, so it can directly access the database
+ * and check authentication state on the server. This provides better
+ * security and performance than client-side checks.
+ */
 export default async function Dashboard() {
+  // Get Supabase client for server-side operations
   const supabase = await createClient()
+  
+  // Get current authenticated user
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Redirect to login if user is not authenticated
   if (!user) {
     redirect("/login")
   }
 
-  // Get user metadata
+  // Extract user metadata stored during registration
+  // These values are stored in the user's metadata object in Supabase Auth
   const fullName = user.user_metadata?.full_name || "Not provided"
   const company = user.user_metadata?.company || "Not provided"
   const email = user.email || "Not provided"
 
   // Check if user has registered for the event
+  // Query the registrations table for this user's registration
   const { data: registration, error } = await supabase
     .from("registrations")
     .select("*")
     .eq("user_id", user.id)
     .single()
 
+  // Determine if user has completed event registration
+  // Registration exists if data is returned and no error occurred
   const hasRegistered = !!registration && !error
 
   return (

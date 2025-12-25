@@ -1,3 +1,20 @@
+/**
+ * Registration Form Component
+ * 
+ * Multi-step registration form for event participants. Collects all required
+ * information for event registration including personal details, company information,
+ * and emergency contact information.
+ * 
+ * Features:
+ * - Multi-step form with progress indication
+ * - Client-side validation using Zod
+ * - Step-by-step validation (validates current step before proceeding)
+ * - Submits registration data to Supabase database
+ * - Success state with confirmation message
+ * 
+ * @module components/registration-form
+ */
+
 "use client"
 
 import { useState } from "react"
@@ -10,6 +27,18 @@ import { Input } from "@/components/ui/input"
 import { User, Mail, Building, Hash, Shirt, Phone, ChevronRight, ChevronLeft, Check } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+/**
+ * Zod schema for registration form validation
+ * 
+ * Validates all registration fields:
+ * - fullName: Minimum 2 characters
+ * - corporateEmail: Valid email format
+ * - employeeId: Required field
+ * - companyName: Minimum 2 characters
+ * - tshirtSize: Must be one of: S, M, L, XL
+ * - emergencyContact: Minimum 2 characters
+ * - emergencyPhone: Minimum 10 characters (basic phone validation)
+ */
 const registrationSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   corporateEmail: z.string().email("Please enter a valid email address"),
@@ -22,32 +51,90 @@ const registrationSchema = z.object({
   emergencyPhone: z.string().min(10, "Emergency contact phone is required"),
 })
 
+/**
+ * TypeScript type inferred from the Zod schema
+ * Used for type-safe form data handling
+ */
 type RegistrationFormData = z.infer<typeof registrationSchema>
 
+/**
+ * Form step definitions
+ * 
+ * Defines the three steps of the registration form with their titles and icons
+ */
 const steps = [
   { id: 1, title: "Personal Info", icon: User },
   { id: 2, title: "Company Details", icon: Building },
   { id: 3, title: "Additional Info", icon: Shirt },
 ]
 
+/**
+ * Registration form component
+ * 
+ * Multi-step form component that collects event registration information.
+ * The form is divided into three steps:
+ * 1. Personal Info: Full name, corporate email, employee ID
+ * 2. Company Details: Company name
+ * 3. Additional Info: T-shirt size, emergency contact details
+ * 
+ * Features:
+ * - Step-by-step navigation with validation
+ * - Progress indicator
+ * - Form validation before proceeding to next step
+ * - Saves registration to Supabase database
+ * - Shows success state after submission
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.userId - The authenticated user's ID (required for database insert)
+ * @returns {JSX.Element} The rendered registration form
+ * 
+ * @example
+ * // Used in app/dashboard/page.tsx
+ * const { data: { user } } = await supabase.auth.getUser()
+ * <RegistrationForm userId={user.id} />
+ */
 export default function RegistrationForm({ userId }: { userId: string }) {
+  // Router for navigation after successful registration
   const router = useRouter()
+  
+  // Current step in the multi-step form (1, 2, or 3)
   const [currentStep, setCurrentStep] = useState(1)
+  
+  // Loading state during form submission
   const [loading, setLoading] = useState(false)
+  
+  // Error message state for displaying submission errors
   const [error, setError] = useState<string | null>(null)
+  
+  // Supabase client for database operations
   const supabase = createClient()
 
+  // React Hook Form setup with Zod validation
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    trigger,
-    getValues,
+    register,          // Register input fields with validation
+    handleSubmit,      // Handle form submission
+    formState: { errors }, // Form validation errors
+    trigger,           // Manually trigger validation for specific fields
+    getValues,         // Get current form values
   } = useForm<RegistrationFormData>({
-    resolver: zodResolver(registrationSchema),
-    mode: "onChange",
+    resolver: zodResolver(registrationSchema), // Use Zod for validation
+    mode: "onChange",  // Validate on change for real-time feedback
   })
 
+  /**
+   * Validates fields for a specific step
+   * 
+   * This function determines which fields belong to the current step
+   * and validates only those fields before allowing the user to proceed.
+   * 
+   * Step field mapping:
+   * - Step 1: fullName, corporateEmail, employeeId
+   * - Step 2: companyName
+   * - Step 3: tshirtSize, emergencyContact, emergencyPhone
+   * 
+   * @param {number} step - The step number to validate (1, 2, or 3)
+   * @returns {Promise<boolean>} True if step is valid, false otherwise
+   */
   const validateStep = async (step: number): Promise<boolean> => {
     let fields: (keyof RegistrationFormData)[] = []
     
@@ -59,25 +146,50 @@ export default function RegistrationForm({ userId }: { userId: string }) {
       fields = ["tshirtSize", "emergencyContact", "emergencyPhone"]
     }
 
+    // Trigger validation for the fields in this step
     const result = await trigger(fields)
     return result
   }
 
+  /**
+   * Handles navigation to the next step
+   * 
+   * Validates the current step before allowing progression.
+   * Only advances if validation passes and not already on the last step.
+   */
   const nextStep = async () => {
     const isValid = await validateStep(currentStep)
     if (isValid && currentStep < 3) {
       setCurrentStep(currentStep + 1)
-      setError(null)
+      setError(null) // Clear any previous errors
     }
   }
 
+  /**
+   * Handles navigation to the previous step
+   * 
+   * Allows users to go back and modify previous step's information.
+   * No validation required to go back.
+   */
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
-      setError(null)
+      setError(null) // Clear any previous errors
     }
   }
 
+  /**
+   * Handles final form submission
+   * 
+   * This function:
+   * 1. Clears any previous errors
+   * 2. Sets loading state
+   * 3. Inserts registration data into Supabase database
+   * 4. Handles errors if insertion fails
+   * 5. Refreshes the page on success to show updated registration status
+   * 
+   * @param {RegistrationFormData} data - Validated form data from all steps
+   */
   const onSubmit = async (data: RegistrationFormData) => {
     setError(null)
     setLoading(true)

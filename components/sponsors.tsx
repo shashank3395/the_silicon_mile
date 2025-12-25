@@ -1,12 +1,43 @@
+/**
+ * Sponsors Component
+ * 
+ * Displays event sponsors in a tiered layout (Platinum, Gold, Silver, Bronze).
+ * Includes placeholder data structure and a call-to-action for new sponsors.
+ * 
+ * Features:
+ * - Tiered sponsor display with different styling per tier
+ * - Placeholder for sponsor logos
+ * - Call-to-action section for potential sponsors
+ * 
+ * Used on the home page to showcase event sponsors.
+ * 
+ * @module components/sponsors
+ */
+
 import Image from "next/image"
 
+/**
+ * Sponsor data structure
+ * 
+ * Defines the shape of sponsor data
+ */
 interface Sponsor {
+  /** Sponsor name */
   name: string
+  /** URL to sponsor logo image (optional) */
   logo?: string
+  /** Sponsor tier level (optional) */
   tier?: "platinum" | "gold" | "silver" | "bronze"
 }
 
-// Placeholder sponsors - replace with actual sponsor data
+/**
+ * Sponsors data
+ * 
+ * Placeholder sponsor data. Replace with actual sponsor information
+ * when sponsors are confirmed.
+ * 
+ * TODO: Update with real sponsor data and logos
+ */
 const sponsors: Sponsor[] = [
   {
     name: "Tech Sponsor",
@@ -30,6 +61,14 @@ const sponsors: Sponsor[] = [
   },
 ]
 
+/**
+ * Gets CSS classes for sponsor tier styling
+ * 
+ * Returns different border and background styles based on sponsor tier.
+ * 
+ * @param {string | undefined} tier - The sponsor tier (platinum, gold, silver, bronze)
+ * @returns {string} Tailwind CSS classes for the tier
+ */
 const getTierStyles = (tier?: string) => {
   switch (tier) {
     case "platinum":
@@ -45,6 +84,14 @@ const getTierStyles = (tier?: string) => {
   }
 }
 
+/**
+ * Gets display label for sponsor tier
+ * 
+ * Returns a human-readable label for the sponsor tier.
+ * 
+ * @param {string | undefined} tier - The sponsor tier
+ * @returns {string} Display label for the tier
+ */
 const getTierLabel = (tier?: string) => {
   switch (tier) {
     case "platinum":
@@ -60,6 +107,19 @@ const getTierLabel = (tier?: string) => {
   }
 }
 
+/**
+ * Sponsors component
+ * 
+ * Renders sponsor information grouped by tier levels.
+ * Displays sponsors in a grid layout with tier-specific styling.
+ * Includes a call-to-action section for potential sponsors.
+ * 
+ * @returns {JSX.Element} The rendered sponsors component
+ * 
+ * @example
+ * // Used on the home page
+ * <Sponsors />
+ */
 export default function Sponsors() {
   return (
     <div className="space-y-12">

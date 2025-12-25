@@ -1,0 +1,689 @@
+================================================================================
+                    THE SILICON MILE - ONBOARDING DOCUMENT
+                        Complete Project Overview & Guide
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1. Project Overview
+2. Technology Stack
+3. Directory Structure (Detailed)
+4. Application Architecture
+5. Key Features & Functionality
+6. Authentication Flow
+7. Database Schema
+8. Component Structure
+9. Routing & Navigation
+10. Development Workflow
+11. Key Configuration Files
+12. Next Steps for Developers
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+The Silicon Mile is a Next.js-based web application for managing a corporate 
+wellness 5K event in Hyderabad. It provides:
+
+- User Registration & Authentication
+- Event Registration Management
+- Admin Dashboard for managing registrations
+- Public pages (Home, Events, Gallery, Announcements)
+- Responsive design with Corporate Wellness branding
+
+Primary Use Cases:
+- Users register accounts and sign up for the 5K event
+- Admins view and manage all registrations
+- Public visitors browse event information and gallery
+
+================================================================================
+2. TECHNOLOGY STACK
+================================================================================
+
+Frontend:
+- Next.js 14.2.5 (React 18.3.1) - App Router architecture
+- TypeScript - Type safety
+- Tailwind CSS - Utility-first styling
+- Shadcn/UI - Reusable UI components
+- Lucide React - Icon library
+- React Hook Form - Form handling
+- Zod - Schema validation
+
+Backend/Authentication:
+- Supabase - Backend-as-a-Service
+  - Authentication (email/password)
+  - PostgreSQL Database
+  - Row Level Security (RLS)
+  - Server-side API
+
+State Management:
+- React Context API (for auth state)
+- Supabase client/server clients for data fetching
+
+Deployment:
+- Next.js (can deploy to Vercel, Netlify, or any Node.js server)
+
+================================================================================
+3. DIRECTORY STRUCTURE (DETAILED)
+================================================================================
+
+the_silicon_mile/
+│
+├── app/                          # Next.js App Router directory
+│   ├── layout.tsx               # Root layout (wraps all pages)
+│   │                            # - Includes Navbar, Footer, AuthProvider
+│   │                            # - Sets global metadata
+│   │
+│   ├── page.tsx                 # Home page (/)
+│   │                            # - Hero section with event info
+│   │                            # - Initiative section
+│   │                            # - Timeline component
+│   │                            # - Sponsors section
+│   │                            # - Contact form
+│   │
+│   ├── globals.css              # Global styles & CSS variables
+│   │                            # - Tailwind directives
+│   │                            # - Theme color definitions (CSS variables)
+│   │                            # - Base layer styles
+│   │
+│   ├── login/
+│   │   └── page.tsx            # Login page (/login)
+│   │                            # - Email/password authentication
+│   │                            # - Redirects to /dashboard on success
+│   │
+│   ├── register/
+│   │   └── page.tsx            # Registration page (/register)
+│   │                            # - User signup form
+│   │                            # - Creates Supabase auth user
+│   │                            # - Stores user metadata (name, company)
+│   │
+│   ├── dashboard/
+│   │   └── page.tsx            # User dashboard (/dashboard)
+│   │                            # - Protected route (requires auth)
+│   │                            # - Shows user profile info
+│   │                            # - Displays registration status
+│   │                            # - Contains RegistrationForm component
+│   │                            # - Shows event details if registered
+│   │
+│   ├── admin/
+│   │   └── page.tsx            # Admin dashboard (/admin)
+│   │                            # - Protected route (requires admin role)
+│   │                            # - Shows all event registrations
+│   │                            # - Uses AdminTable component
+│   │
+│   ├── events/
+│   │   └── page.tsx            # Events listing page (/events)
+│   │                            # - Public page showing event information
+│   │
+│   ├── gallery/
+│   │   └── page.tsx            # Gallery page (/gallery)
+│   │                            # - Public page for event photos
+│   │
+│   └── announcements/
+│       └── page.tsx            # Announcements page (/announcements)
+│                                # - Public page for event announcements
+│
+├── components/                   # React components directory
+│   ├── navbar.tsx              # Main navigation bar
+│   │                            # - Responsive design (mobile menu)
+│   │                            # - Shows different links based on auth state
+│   │                            # - Admin link for admin users
+│   │                            # - Logout functionality
+│   │
+│   ├── footer.tsx              # Site footer
+│   │                            # - Contact information
+│   │                            # - Social links
+│   │                            # - Corporate branding
+│   │
+│   ├── auth-provider.tsx       # Authentication context provider
+│   │                            # - Wraps app with auth state
+│   │                            # - Manages user session
+│   │                            # - Provides useAuth hook
+│   │                            # - Handles auth state changes
+│   │
+│   ├── registration-form.tsx   # Event registration form
+│   │                            # - Multi-step form component
+│   │                            # - Collects: name, email, employee ID, 
+│   │                            #   company, t-shirt size, emergency contact
+│   │                            # - Validates with Zod schema
+│   │                            # - Saves to registrations table
+│   │
+│   ├── admin-table.tsx         # Admin data table
+│   │                            # - Displays all registrations
+│   │                            # - Sorting, filtering capabilities
+│   │                            # - Uses TanStack Table
+│   │                            # - Export functionality
+│   │
+│   ├── contact-form.tsx        # Contact form component
+│   │                            # - Name, company, message fields
+│   │                            # - Client-side validation
+│   │                            # - Used on home page
+│   │
+│   ├── timeline.tsx            # Event timeline component
+│   │                            # - Visual timeline of event milestones
+│   │                            # - Shows dates, locations, descriptions
+│   │
+│   ├── sponsors.tsx            # Sponsors display component
+│   │                            # - Tiered sponsor layout (Platinum, Gold, etc.)
+│   │                            # - Call-to-action for new sponsors
+│   │
+│   └── ui/                     # Reusable UI components (Shadcn/UI style)
+│       ├── button.tsx          # Button component with variants
+│       ├── input.tsx           # Input field component
+│       ├── textarea.tsx        # Textarea component
+│       └── table.tsx           # Table component for data display
+│
+├── lib/                         # Utility libraries and helpers
+│   ├── utils.ts                # Utility functions
+│   │                            # - cn() function for className merging
+│   │                            # - Uses clsx + tailwind-merge
+│   │
+│   └── supabase/               # Supabase client configurations
+│       ├── client.ts           # Browser-side Supabase client
+│       │                        # - For client components
+│       │                        # - Creates browser client instance
+│       │                        # - Validates env variables
+│       │
+│       ├── server.ts           # Server-side Supabase client
+│       │                        # - For server components & API routes
+│       │                        # - Handles cookies for SSR
+│       │                        # - Used in server components
+│       │
+│       └── middleware.ts       # Supabase middleware helper
+│                                # - Updates session on each request
+│                                # - Handles cookie management
+│                                # - Used by Next.js middleware
+│
+├── middleware.ts                # Next.js middleware
+│                                # - Runs on every request
+│                                # - Calls Supabase session update
+│                                # - Protects routes (handled in middleware.ts)
+│
+├── public/                      # Static assets (if any)
+│                                # - Images, fonts, etc.
+│
+├── .env.local                   # Environment variables (NOT in git)
+│                                # - NEXT_PUBLIC_SUPABASE_URL
+│                                # - NEXT_PUBLIC_SUPABASE_ANON_KEY
+│
+├── tailwind.config.js          # Tailwind CSS configuration
+│                                # - Theme customization
+│                                # - Color system (maps CSS variables)
+│                                # - Content paths for purging
+│                                # - Plugin configuration
+│
+├── postcss.config.js           # PostCSS configuration
+│                                # - Tailwind CSS plugin
+│                                # - Autoprefixer plugin
+│
+├── next.config.js              # Next.js configuration
+│                                # - Basic config (can be extended)
+│
+├── tsconfig.json               # TypeScript configuration
+│                                # - Path aliases (@/ = ./)
+│                                # - Compiler options
+│
+├── package.json                # Node.js dependencies & scripts
+│                                # - Dependencies list
+│                                # - npm scripts (dev, build, start, lint)
+│
+├── supabase_schema.sql         # Database schema
+│                                # - registrations table definition
+│                                # - RLS policies
+│                                # - Indexes
+│                                # - Triggers
+│
+├── README.md                    # Project readme
+├── SUPABASE_SETUP.md           # Supabase setup instructions
+├── ADMIN_SETUP.md              # Admin user setup guide
+└── LOCALHOST_SETUP.md          # Local development setup guide
+
+================================================================================
+4. APPLICATION ARCHITECTURE
+================================================================================
+
+ARCHITECTURE PATTERN: Next.js App Router with Server/Client Components
+
+┌─────────────────────────────────────────────────────────────┐
+│                     Next.js Application                      │
+│                                                              │
+│  ┌────────────────────────────────────────────────────┐    │
+│  │              Root Layout (app/layout.tsx)          │    │
+│  │  ┌──────────────────────────────────────────────┐  │    │
+│  │  │         AuthProvider (Context)                │  │    │
+│  │  │  - Provides auth state to all components      │  │    │
+│  │  │  - Listens to Supabase auth changes           │  │    │
+│  │  └──────────────────────────────────────────────┘  │    │
+│  │  ┌──────────────────────────────────────────────┐  │    │
+│  │  │              Navbar Component                 │  │    │
+│  │  │  - Reads auth context                        │  │    │
+│  │  │  - Conditional rendering based on auth state  │  │    │
+│  │  └──────────────────────────────────────────────┘  │    │
+│  │  ┌──────────────────────────────────────────────┐  │    │
+│  │  │              Page Components                  │  │    │
+│  │  │  - Server Components (default)                │  │    │
+│  │  │  - Client Components (marked with "use client")│  │    │
+│  │  └──────────────────────────────────────────────┘  │    │
+│  │  ┌──────────────────────────────────────────────┐  │    │
+│  │  │              Footer Component                 │  │    │
+│  │  └──────────────────────────────────────────────┘  │    │
+│  └────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Middleware Layer                          │
+│  - Runs on every request                                     │
+│  - Updates Supabase session                                  │
+│  - Handles cookie management                                 │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Supabase Backend                          │
+│  ┌──────────────────┐  ┌──────────────────┐                │
+│  │   Authentication │  │    Database      │                │
+│  │   - Email/Pass   │  │  - PostgreSQL    │                │
+│  │   - Sessions     │  │  - RLS Policies  │                │
+│  │   - JWT Tokens   │  │  - registrations │                │
+│  └──────────────────┘  └──────────────────┘                │
+└─────────────────────────────────────────────────────────────┘
+
+COMPONENT TYPES:
+1. Server Components (Default)
+   - Run on server, no JavaScript sent to client
+   - Can directly access database/APIs
+   - Example: app/dashboard/page.tsx
+
+2. Client Components (Marked with "use client")
+   - Run in browser, have interactivity
+   - Can use hooks, event handlers
+   - Example: components/navbar.tsx, components/auth-provider.tsx
+
+================================================================================
+5. KEY FEATURES & FUNCTIONALITY
+================================================================================
+
+A. AUTHENTICATION SYSTEM
+   - Email/Password authentication via Supabase
+   - User registration with metadata (name, company)
+   - Protected routes (middleware + server component checks)
+   - Session management (automatic refresh)
+   - Logout functionality
+
+B. EVENT REGISTRATION SYSTEM
+   - Multi-step registration form
+   - Collects participant details:
+     * Full Name
+     * Corporate Email
+     * Employee ID
+     * Company Name
+     * T-shirt Size (S/M/L/XL)
+     * Emergency Contact (name & phone)
+   - One registration per user (enforced by UNIQUE constraint)
+   - Registration status tracking (pending/confirmed/cancelled)
+   - Timestamps (registration_date, created_at, updated_at)
+
+C. ADMIN DASHBOARD
+   - Role-based access (user.user_metadata.role === "admin")
+   - View all registrations
+   - Sortable/filterable table
+   - Export functionality (can be extended)
+   - Real-time data from database
+
+D. PUBLIC PAGES
+   - Home: Event overview, timeline, sponsors, contact
+   - Events: Event information
+   - Gallery: Event photos
+   - Announcements: Event updates
+
+E. RESPONSIVE DESIGN
+   - Mobile-first approach
+   - Tailwind CSS breakpoints
+   - Mobile navigation menu
+   - Responsive tables and forms
+
+================================================================================
+6. AUTHENTICATION FLOW
+================================================================================
+
+REGISTRATION FLOW:
+1. User visits /register
+2. Fills registration form (email, password, name, company)
+3. Frontend calls: supabase.auth.signUp()
+4. Supabase creates user account
+5. User metadata stored: { full_name, company }
+6. User redirected to /dashboard
+
+LOGIN FLOW:
+1. User visits /login
+2. Enters email and password
+3. Frontend calls: supabase.auth.signInWithPassword()
+4. Supabase validates credentials
+5. Session created, cookies set
+6. User redirected to /dashboard
+
+SESSION MANAGEMENT:
+1. Middleware runs on every request
+2. Calls updateSession() from lib/supabase/middleware.ts
+3. Supabase client checks cookies for session
+4. Session refreshed if valid, expired sessions cleared
+5. Auth state propagated to AuthProvider
+6. Components re-render based on auth state
+
+PROTECTED ROUTES:
+- /dashboard: Requires authenticated user (redirects to /login if not)
+- /admin: Requires authenticated user + admin role (redirects to /dashboard if not admin)
+
+PROTECTION MECHANISM:
+1. Middleware checks route patterns
+2. Server components check auth state: await supabase.auth.getUser()
+3. Redirect if unauthorized
+4. Client components use useAuth() hook to conditionally render
+
+LOGOUT FLOW:
+1. User clicks logout button
+2. Calls signOut() from AuthProvider
+3. Supabase auth.signOut() clears session
+4. Cookies removed
+5. User state set to null
+6. Redirect to home page
+
+================================================================================
+7. DATABASE SCHEMA
+================================================================================
+
+DATABASE: PostgreSQL (via Supabase)
+
+TABLE: registrations
+-------------------
+Columns:
+- id (UUID, Primary Key) - Auto-generated
+- user_id (UUID, Foreign Key → auth.users.id) - Links to Supabase auth user
+- full_name (TEXT) - Participant's full name
+- corporate_email (TEXT) - Participant's corporate email
+- employee_id (TEXT) - Employee ID
+- company_name (TEXT) - Company name
+- tshirt_size (TEXT) - One of: 'S', 'M', 'L', 'XL'
+- emergency_contact (TEXT) - Emergency contact name
+- emergency_phone (TEXT) - Emergency contact phone
+- registration_date (TIMESTAMPTZ) - When registration was submitted
+- status (TEXT) - One of: 'pending', 'confirmed', 'cancelled' (default: 'confirmed')
+- created_at (TIMESTAMPTZ) - Record creation timestamp
+- updated_at (TIMESTAMPTZ) - Last update timestamp (auto-updated via trigger)
+- UNIQUE constraint on user_id (one registration per user)
+
+Indexes:
+- idx_registrations_user_id - Fast lookup by user
+- idx_registrations_status - Fast filtering by status
+- idx_registrations_date - Fast sorting by date
+
+ROW LEVEL SECURITY (RLS):
+1. SELECT Policy: Users can view their own registrations OR admins can view all
+2. INSERT Policy: Users can only insert their own registrations
+3. UPDATE Policy: Users can only update their own registrations
+
+These policies ensure:
+- Regular users only see their own data
+- Admins see all registrations
+- Users can't modify other users' data
+
+TRIGGERS:
+- update_registrations_updated_at: Automatically updates updated_at on record changes
+
+================================================================================
+8. COMPONENT STRUCTURE
+================================================================================
+
+REUSABLE UI COMPONENTS (components/ui/):
+These follow Shadcn/UI patterns for consistency.
+
+1. Button (button.tsx)
+   - Variants: default, destructive, outline, secondary, ghost, link
+   - Sizes: default, sm, lg, icon
+   - Uses class-variance-authority for variant management
+
+2. Input (input.tsx)
+   - Standard text input
+   - Styled with theme colors
+   - Focus states, disabled states
+
+3. Textarea (textarea.tsx)
+   - Multi-line text input
+   - Same styling as Input
+   - Configurable rows
+
+4. Table (table.tsx)
+   - Data table components
+   - Used in AdminTable
+
+FEATURE COMPONENTS:
+
+1. Navbar (navbar.tsx)
+   - Responsive navigation
+   - Mobile hamburger menu
+   - Conditional links based on auth state
+   - Logout button for authenticated users
+   - Admin link for admin users
+
+2. AuthProvider (auth-provider.tsx)
+   - React Context Provider
+   - Manages global auth state
+   - Exposes useAuth() hook
+   - Listens to Supabase auth state changes
+   - Provides signOut function
+
+3. RegistrationForm (registration-form.tsx)
+   - Multi-step form
+   - React Hook Form for form management
+   - Zod validation
+   - Submits to registrations table
+   - Shows success state after submission
+
+4. AdminTable (admin-table.tsx)
+   - Data table with sorting/filtering
+   - Uses TanStack Table
+   - Displays all registration fields
+   - Export functionality (CSV)
+
+5. ContactForm (contact-form.tsx)
+   - Simple contact form
+   - Name, company, message fields
+   - Client-side validation
+   - Placeholder for backend integration
+
+6. Timeline (timeline.tsx)
+   - Visual timeline component
+   - Shows event milestones
+   - Icons and dates
+
+7. Sponsors (sponsors.tsx)
+   - Sponsor display
+   - Tier-based layout
+   - Call-to-action section
+
+================================================================================
+9. ROUTING & NAVIGATION
+================================================================================
+
+ROUTING SYSTEM: Next.js App Router (file-based routing)
+
+PUBLIC ROUTES:
+- / (Home page) - Public
+- /events - Public event information
+- /gallery - Public gallery
+- /announcements - Public announcements
+- /login - Public (redirects to /dashboard if already logged in)
+- /register - Public (redirects to /dashboard if already logged in)
+
+PROTECTED ROUTES:
+- /dashboard - Requires authentication
+  * Checks: await supabase.auth.getUser()
+  * Redirect: /login if not authenticated
+  * Content: User profile, registration form/status
+
+- /admin - Requires authentication + admin role
+  * Checks: user.user_metadata.role === "admin"
+  * Redirect: /dashboard if not admin, /login if not authenticated
+  * Content: All registrations table
+
+NAVIGATION STRUCTURE:
+Navbar links vary based on authentication state:
+
+Unauthenticated:
+- Home, Gallery, Announcements, Events, Register, Login
+
+Authenticated (Regular User):
+- Home, Gallery, Announcements, Events, Dashboard, Logout
+
+Authenticated (Admin User):
+- Home, Gallery, Announcements, Events, Dashboard, Admin, Logout
+
+MIDDLEWARE PROTECTION:
+The middleware.ts file intercepts requests and:
+1. Updates Supabase session
+2. Can redirect unauthenticated users (handled in middleware helper)
+3. Runs before page rendering
+
+================================================================================
+10. DEVELOPMENT WORKFLOW
+================================================================================
+
+SETUP (First Time):
+1. Clone repository
+2. Install dependencies: npm install
+3. Create Supabase project at supabase.com
+4. Get API keys from Supabase dashboard
+5. Create .env.local with:
+   NEXT_PUBLIC_SUPABASE_URL=your_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
+6. Run SQL schema: Copy supabase_schema.sql to Supabase SQL Editor
+7. Start dev server: npm run dev
+
+DAILY DEVELOPMENT:
+1. Start dev server: npm run dev
+2. Make changes to files
+3. Hot reload happens automatically
+4. Test in browser at http://localhost:3000
+5. Check console for errors
+
+BUILDING FOR PRODUCTION:
+1. npm run build - Creates optimized production build
+2. npm start - Runs production server (test locally)
+3. Deploy to Vercel/Netlify (or other platform)
+
+COMMON TASKS:
+- Adding a new page: Create folder in app/ with page.tsx
+- Adding a component: Create file in components/
+- Modifying styles: Edit globals.css or component className
+- Database changes: Update supabase_schema.sql and run in Supabase
+- Environment variables: Add to .env.local (never commit .env.local)
+
+================================================================================
+11. KEY CONFIGURATION FILES
+================================================================================
+
+package.json:
+- Lists all dependencies
+- Defines npm scripts (dev, build, start, lint)
+- Version information
+
+tailwind.config.js:
+- Maps CSS variables to Tailwind classes
+- Defines theme colors (border, background, primary, etc.)
+- Configures content paths for CSS purging
+- Includes tailwindcss-animate plugin
+
+tsconfig.json:
+- Path alias: @/ → ./
+- Enables strict TypeScript checking
+- Includes Next.js types
+
+next.config.js:
+- Next.js configuration
+- Currently minimal (can be extended for images, redirects, etc.)
+
+.env.local (NOT in git):
+- NEXT_PUBLIC_SUPABASE_URL - Your Supabase project URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY - Your Supabase anon/public key
+- Required for app to function
+
+postcss.config.js:
+- Processes CSS
+- Applies Tailwind CSS
+- Applies Autoprefixer
+
+middleware.ts:
+- Next.js middleware configuration
+- Defines which routes to intercept
+- Calls Supabase session update
+
+================================================================================
+12. NEXT STEPS FOR DEVELOPERS
+================================================================================
+
+FOR NEW DEVELOPERS:
+1. Read this document completely
+2. Follow LOCALHOST_SETUP.md to set up development environment
+3. Follow SUPABASE_SETUP.md to configure backend
+4. Explore the codebase, starting with app/page.tsx
+5. Understand the component structure in components/
+6. Test the authentication flow (register → login → dashboard)
+7. Review the database schema in supabase_schema.sql
+
+COMMON MODIFICATIONS:
+
+Adding a New Page:
+1. Create folder in app/ directory
+2. Create page.tsx file
+3. Export default function component
+4. Add link to navbar if needed
+
+Adding a New Component:
+1. Create file in components/ directory
+2. Use "use client" if interactivity needed
+3. Import and use in pages/components
+
+Modifying Database:
+1. Update supabase_schema.sql
+2. Run SQL in Supabase SQL Editor
+3. Update TypeScript types if needed
+4. Update components that use the data
+
+Adding Environment Variables:
+1. Add to .env.local (format: NEXT_PUBLIC_VARIABLE_NAME=value)
+2. Access via process.env.NEXT_PUBLIC_VARIABLE_NAME
+3. Restart dev server after changes
+
+Styling Guidelines:
+- Use Tailwind CSS utility classes
+- Theme colors: text-navy, bg-orange, border-input, etc.
+- Responsive: Use md:, lg: prefixes
+- Custom styles: Add to globals.css if needed
+
+AUTHENTICATION NOTES:
+- Always check auth state in server components: await supabase.auth.getUser()
+- Use useAuth() hook in client components
+- Protect routes at middleware and component level
+- Never expose sensitive operations without auth checks
+
+DATABASE NOTES:
+- Always use RLS policies (never disable)
+- Test policies work correctly
+- Use server-side Supabase client for database operations
+- Validate data with Zod before database operations
+
+================================================================================
+                            END OF DOCUMENT
+================================================================================
+
+This document provides a comprehensive overview of The Silicon Mile codebase.
+For specific setup instructions, refer to:
+- LOCALHOST_SETUP.md - Local development setup
+- SUPABASE_SETUP.md - Supabase configuration
+- ADMIN_SETUP.md - Admin user setup
+
+For questions or issues, check the code comments or project documentation.
+
+Last Updated: December 2024
+

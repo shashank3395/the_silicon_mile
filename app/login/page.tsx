@@ -1,3 +1,19 @@
+/**
+ * Login Page Component
+ * 
+ * User authentication page for existing users to sign in to their accounts.
+ * Features:
+ * - Email and password authentication
+ * - Form validation using Zod
+ * - Error handling and display
+ * - Redirects to dashboard on successful login
+ * - Link to registration page for new users
+ * 
+ * Route: /login
+ * 
+ * @module app/login/page
+ */
+
 "use client"
 
 import { useState } from "react"
@@ -11,43 +27,96 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Mail, Lock } from "lucide-react"
 
+/**
+ * Zod schema for login form validation
+ * 
+ * Validates:
+ * - email: Must be a valid email address
+ * - password: Required field (minimum 1 character)
+ */
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 })
 
+/**
+ * TypeScript type inferred from the Zod schema
+ * Used for type-safe form data handling
+ */
 type LoginFormData = z.infer<typeof loginSchema>
 
+/**
+ * Login page component
+ * 
+ * Renders a login form that allows users to authenticate with their
+ * email and password. On successful login, redirects to the dashboard.
+ * 
+ * Features:
+ * - Client-side form validation
+ * - Loading state during authentication
+ * - Error message display
+ * - Link to registration page
+ * 
+ * @returns {JSX.Element} The rendered login page
+ * 
+ * @remarks
+ * This is a Client Component because it uses React hooks and form handling.
+ * The middleware protects the /dashboard route, but users can access this
+ * page freely to authenticate.
+ */
 export default function Login() {
+  // Router for navigation after successful login
   const router = useRouter()
+  
+  // Error state for displaying authentication errors
   const [error, setError] = useState<string | null>(null)
+  
+  // Loading state during authentication request
   const [loading, setLoading] = useState(false)
+  
+  // Supabase client for authentication
   const supabase = createClient()
 
+  // React Hook Form setup with Zod validation
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
+    register,          // Register input fields with validation
+    handleSubmit,      // Handle form submission
+    formState: { errors }, // Form validation errors
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema), // Use Zod for validation
   })
 
+  /**
+   * Handles form submission and user authentication
+   * 
+   * This function:
+   * 1. Clears any previous errors
+   * 2. Sets loading state
+   * 3. Attempts to sign in the user with Supabase
+   * 4. Redirects to dashboard on success
+   * 5. Displays error message on failure
+   * 
+   * @param {LoginFormData} data - Validated form data (email and password)
+   */
   const onSubmit = async (data: LoginFormData) => {
     setError(null)
     setLoading(true)
 
     try {
+      // Attempt to sign in with email and password
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       })
 
+      // Throw error if authentication failed
       if (authError) throw authError
 
       // Redirect to dashboard after successful login
       router.push("/dashboard")
-      router.refresh()
+      router.refresh() // Refresh to update auth state
     } catch (err: any) {
+      // Display error message to user
       setError(err.message || "Invalid email or password")
     } finally {
       setLoading(false)

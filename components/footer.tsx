@@ -1,6 +1,40 @@
+/**
+ * Footer Component
+ * 
+ * Site footer component displayed at the bottom of every page.
+ * Contains:
+ * - Company information and description
+ * - Quick navigation links
+ * - Contact information (email, phone, address)
+ * - Copyright notice and legal links
+ * 
+ * This is a server component (no "use client" directive), making it
+ * more efficient for SEO and initial page load.
+ * 
+ * @module components/footer
+ */
+
 import Link from "next/link"
 import { Mail, Phone, MapPin } from "lucide-react"
 
+/**
+ * Footer component
+ * 
+ * Renders the site footer with three main sections:
+ * 1. Company Info: Brand name and description
+ * 2. Quick Links: Navigation to main pages
+ * 3. Contact Info: Email, phone, and address with icons
+ * 
+ * Also includes:
+ * - Copyright notice with dynamic year
+ * - Privacy Policy and Terms of Service links
+ * 
+ * @returns {JSX.Element} The rendered footer element
+ * 
+ * @example
+ * // Used in app/layout.tsx
+ * <Footer />
+ */
 const Footer = () => {
   return (
     <footer className="bg-navy text-white">

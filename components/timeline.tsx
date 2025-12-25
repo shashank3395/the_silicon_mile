@@ -1,13 +1,41 @@
+/**
+ * Timeline Component
+ * 
+ * Displays a visual timeline of event milestones and important dates.
+ * Shows event dates, times, locations, and descriptions in a vertical
+ * timeline format with icons and styling.
+ * 
+ * Used on the home page to show upcoming event schedule.
+ * 
+ * @module components/timeline
+ */
+
 import { Calendar, MapPin, Clock } from "lucide-react"
 
+/**
+ * Timeline event data structure
+ * 
+ * Defines the shape of event data displayed in the timeline
+ */
 interface TimelineEvent {
+  /** Event date or milestone name */
   date: string
+  /** Event title */
   title: string
+  /** Event description */
   description: string
+  /** Event location (optional) */
   location?: string
+  /** Event time (optional) */
   time?: string
 }
 
+/**
+ * Timeline events data
+ * 
+ * Array of events to display in the timeline.
+ * Can be updated with actual event dates and information.
+ */
 const timelineEvents: TimelineEvent[] = [
   {
     date: "Registration Opens",
@@ -31,6 +59,22 @@ const timelineEvents: TimelineEvent[] = [
   },
 ]
 
+/**
+ * Timeline component
+ * 
+ * Renders a vertical timeline showing event milestones and dates.
+ * Each event is displayed with:
+ * - Step number indicator
+ * - Event icon
+ * - Date, time, and location information
+ * - Event description
+ * 
+ * @returns {JSX.Element} The rendered timeline component
+ * 
+ * @example
+ * // Used on the home page
+ * <Timeline />
+ */
 export default function Timeline() {
   return (
     <div className="relative">

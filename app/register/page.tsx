@@ -1,3 +1,20 @@
+/**
+ * Registration Page Component
+ * 
+ * User registration page for new users to create an account.
+ * Features:
+ * - Account creation with email and password
+ * - User metadata collection (full name, company)
+ * - Form validation using Zod
+ * - Error handling and display
+ * - Redirects to dashboard on successful registration
+ * - Link to login page for existing users
+ * 
+ * Route: /register
+ * 
+ * @module app/register/page
+ */
+
 "use client"
 
 import { useState } from "react"
@@ -11,6 +28,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Mail, Lock, User, Building } from "lucide-react"
 
+/**
+ * Zod schema for registration form validation
+ * 
+ * Validates:
+ * - email: Must be a valid email address
+ * - password: Minimum 6 characters
+ * - fullName: Minimum 2 characters
+ * - company: Minimum 2 characters
+ */
 const signupSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -18,27 +44,75 @@ const signupSchema = z.object({
   company: z.string().min(2, "Company name must be at least 2 characters"),
 })
 
+/**
+ * TypeScript type inferred from the Zod schema
+ * Used for type-safe form data handling
+ */
 type SignupFormData = z.infer<typeof signupSchema>
 
+/**
+ * Registration page component
+ * 
+ * Renders a registration form that allows new users to create an account.
+ * On successful registration, redirects to the dashboard where they can
+ * complete their event registration.
+ * 
+ * Features:
+ * - Client-side form validation
+ * - Loading state during account creation
+ * - Error message display
+ * - Link to login page
+ * - Stores user metadata (name, company) in Supabase
+ * 
+ * @returns {JSX.Element} The rendered registration page
+ * 
+ * @remarks
+ * This is a Client Component because it uses React hooks and form handling.
+ * User metadata (full_name, company) is stored in the user's metadata object
+ * in Supabase Auth, making it accessible throughout the application.
+ */
 export default function Register() {
+  // Router for navigation after successful registration
   const router = useRouter()
+  
+  // Error state for displaying registration errors
   const [error, setError] = useState<string | null>(null)
+  
+  // Loading state during account creation
   const [loading, setLoading] = useState(false)
+  
+  // Supabase client for authentication
   const supabase = createClient()
 
+  // React Hook Form setup with Zod validation
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
+    register,          // Register input fields with validation
+    handleSubmit,      // Handle form submission
+    formState: { errors }, // Form validation errors
   } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+    resolver: zodResolver(signupSchema), // Use Zod for validation
   })
 
+  /**
+   * Handles form submission and user account creation
+   * 
+   * This function:
+   * 1. Clears any previous errors
+   * 2. Sets loading state
+   * 3. Creates a new user account with Supabase
+   * 4. Stores user metadata (full_name, company)
+   * 5. Redirects to dashboard on success
+   * 6. Displays error message on failure
+   * 
+   * @param {SignupFormData} data - Validated form data
+   */
   const onSubmit = async (data: SignupFormData) => {
     setError(null)
     setLoading(true)
 
     try {
+      // Create new user account with email/password
+      // Also store user metadata (name and company) for later use
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -50,12 +124,14 @@ export default function Register() {
         },
       })
 
+      // Throw error if account creation failed
       if (authError) throw authError
 
+      // If user was created successfully, redirect to dashboard
       if (authData.user) {
         // Redirect to dashboard after successful signup
         router.push("/dashboard")
-        router.refresh()
+        router.refresh() // Refresh to update auth state
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during signup")

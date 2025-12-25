@@ -1,3 +1,19 @@
+/**
+ * Admin Table Component
+ * 
+ * Data table component for displaying and managing event registrations
+ * in the admin dashboard. Features:
+ * - Sortable columns
+ * - Search/filter functionality
+ * - Pagination
+ * - Export to CSV functionality
+ * - Responsive design
+ * 
+ * Uses TanStack Table for advanced table functionality.
+ * 
+ * @module components/admin-table
+ */
+
 "use client"
 
 import { useState, useMemo } from "react"
@@ -13,6 +29,12 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Download } from "lucide-react"
 
+/**
+ * Registration data structure
+ * 
+ * Represents a single event registration record from the database.
+ * Matches the structure of the registrations table in Supabase.
+ */
 interface Registration {
   id: string
   user_id: string
@@ -27,14 +49,48 @@ interface Registration {
   status: string
 }
 
+/**
+ * AdminTable component props
+ */
 interface AdminTableProps {
+  /** Array of registration records to display in the table */
   registrations: Registration[]
 }
 
+/**
+ * Admin table component
+ * 
+ * Displays all event registrations in a sortable, searchable table.
+ * Features:
+ * - Search/filter by company name
+ * - Export filtered results to CSV
+ * - Responsive table layout
+ * - Status badges with color coding
+ * 
+ * @param {AdminTableProps} props - Component props
+ * @param {Registration[]} props.registrations - Array of registration records
+ * @returns {JSX.Element} The rendered admin table
+ * 
+ * @example
+ * // Used in app/admin/page.tsx
+ * const { data: registrations } = await supabase.from('registrations').select('*')
+ * <AdminTable registrations={registrations || []} />
+ */
 export default function AdminTable({ registrations }: AdminTableProps) {
+  // Search query state for filtering registrations
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Filter registrations by company name
+  /**
+   * Filters registrations based on the search query
+   * 
+   * Filters by company name (case-insensitive). Returns all registrations
+   * if search query is empty.
+   * 
+   * Uses useMemo to optimize performance by only recalculating when
+   * registrations or searchQuery changes.
+   * 
+   * @returns {Registration[]} Filtered array of registrations
+   */
   const filteredRegistrations = useMemo(() => {
     if (!searchQuery.trim()) {
       return registrations
@@ -44,7 +100,17 @@ export default function AdminTable({ registrations }: AdminTableProps) {
     )
   }, [registrations, searchQuery])
 
-  // Mock CSV export function
+  /**
+   * Exports filtered registrations to CSV file
+   * 
+   * Creates a CSV file with all registration data and triggers a download.
+   * The file is named with the current date (e.g., registrations_2024-12-24.csv).
+   * 
+   * CSV includes all fields from the Registration interface:
+   * - Full Name, Corporate Email, Employee ID, Company Name
+   * - T-shirt Size, Emergency Contact, Emergency Phone
+   * - Registration Date, Status
+   */
   const handleExportCSV = () => {
     const headers = [
       "Full Name",
